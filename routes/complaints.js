@@ -8,7 +8,7 @@ require('dotenv').config();
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
   port: process.env.SMTP_PORT,
-  secure: process.env.SMTP_SECURE === 'true', // Convert string to boolean
+  secure: process.env.SMTP_SECURE === true, // Convert string to boolean
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS
@@ -18,10 +18,8 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-
-// Function to send confirmation email
 const sendConfirmationEmail = async (email, complaintNumber, message) => {
-  try {
+  try { 
     const mailOptions = {
       from: '"Mera Bestie" <pecommerce8@gmail.com>',
       to: email,

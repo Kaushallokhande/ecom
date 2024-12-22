@@ -11,7 +11,7 @@ require('dotenv').config();
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
   port: process.env.SMTP_PORT,
-  secure: process.env.SMTP_SECURE === 'true', // Convert string to boolean
+  secure: process.env.SMTP_SECURE === 'true',
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS
@@ -114,19 +114,63 @@ router.post('/delete-items', async (req, res) => {
 // Route to update quantity
 
 // Place Order Route
+
+
+router.post('/product-details',async(req,res)=>{
+  try{
+    const {productId}=req.body;
+    console.log('productId',productId)
+    if(!productId){
+      throw new Error("Product not found");
+    }
+    const productDetails=await Product.findById(productId);
+    if (!productDetails) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+    console.log("productde",productDetails)
+    res.status(200).json(productDetails);
+  }
+  catch(error){
+    console.error("Error fetching product details:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+})
+router.post('/product-details-forCart', async (req, res) => {
+  try {
+    const { productId } = req.body;
+    console.log('productId', productId);
+
+    if (!productId) {
+      return res.status(400).json({ error: "Product ID is required" });
+    }
+
+    const productDetails = await Product.findOne({ productId: productId });
+
+    if (!productDetails) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+
+    res.status(200).json(productDetails);
+  } catch (error) {
+    console.error("Error fetching product details:", error);
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+
+
 router.post('/place-order', async (req, res) => {
   try {
     const { userId, date, time, address, price, productsOrdered } = req.body;
-
+    console.log("start");
+    const user = await User.findOne({userId});
+    if (!user) throw new Error('User not found');
     const orderId = Math.floor(100000 + Math.random() * 900000).toString();
     const trackingId = Math.random().toString(36).substring(2, 14).toUpperCase();
 
-    const user = await User.findById(userId);
-    if (!user) throw new Error('User not found');
-
-    const productIds = productsOrdered.map(item => item.productId);
-
-    const productDetails = await Product.find({ productId: { $in: productIds } });
+    const productIds = productsOrdered;
+   console.log("product id",productIds);
+   console.log(userId, date, time, address, price, productsOrdered);
 
     const order = new Order({
       userId,
@@ -141,10 +185,12 @@ router.post('/place-order', async (req, res) => {
       price
     });
 
-    await order.save();
+    console.log("Saving order:", order);
+    const savedOrder = await order.save();
+    console.log("Order saved successfully:", savedOrder);
 
-    const emailHtml = `<div>Order Confirmation for ${user.name}...</div>`; // Simplified for brevity
-    await transporter.sendMail({ from: `pecommerce8@gmail.com`, to: user.email, subject: 'Order Confirmation', html: emailHtml });
+    // const emailHtml = `<div>Order Confirmation for ${user.name}...</div>`; // Simplified for brevity
+    // await transporter.sendMail({ from: `pecommerce8@gmail.com`, to: user.email, subject: 'Order Confirmation', html: emailHtml });
 
     res.status(200).json({ success: true, message: 'Order placed successfully', orderId, trackingId });
   } catch (error) {

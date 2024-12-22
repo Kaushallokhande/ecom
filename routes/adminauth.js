@@ -195,4 +195,27 @@ router.post('/logout', async (req, res) => {
   }
 });
 
+
+router.get('/seller/:sellerId', async (req, res) => {
+  try {
+    const { sellerId } = req.params;
+    const seller = await Seller.findOne({ sellerId }, { 
+      name: 1,
+      businessName: 1,
+      businessAddress: 1,
+      businessType: 1,
+      _id: 0 
+    });
+    
+    if (!seller) {
+      return res.status(404).json({ error: 'Seller not found' });
+    }
+    
+    res.status(200).json(seller);
+  } catch (err) {
+    res.status(500).json({ error: 'Error fetching seller details' });
+  }
+});
+
+
 module.exports = router;
