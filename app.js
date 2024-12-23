@@ -8,7 +8,7 @@ const authRoutes = require('./routes/auth');
 const uuid = require('uuid');
 const bcrypt = require('bcrypt'); // Added bcrypt import
 const Seller = require('./models/seller');
-const adminAuthRoutes = require('./routes/adminauth'); 
+const adminAuthRoutes = require('./routes/adminauth');
 const cartRoutes = require('./routes/cart');
 const complaintsRoutes = require('./routes/complaints');
 const couponRoutes = require('./routes/coupon')
@@ -26,7 +26,8 @@ const app = express();
 //   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 // }));
 // app.use(cors());
-app.use(cors({ origin: "*", methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'] }))
+app.use(cors({ 
+  origin: ['https://ecom-indol-one.vercel.app', 'http://localhost:3000'], methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'] }))
 app.use(express.json());
 app.use(require('cookie-parser')());
 app.use(express.urlencoded({ extended: true }));
@@ -52,12 +53,12 @@ app.use('/auth', authRoutes);
 app.use('/admin', adminAuthRoutes);
 app.use('/cart', cartRoutes);
 app.use('/complaints', complaintsRoutes);
-app.use('/coupon',couponRoutes)
+app.use('/coupon', couponRoutes)
 
 const uri = process.env.MONGO_URI;
 mongoose.connect(uri)
-.then(() => console.log('Connected to MongoDB'))
-.catch(err => console.error('MongoDB connection error:', err));
+  .then(() => console.log('Connected to MongoDB'))
+  .catch(err => console.error('MongoDB connection error:', err));
 
 app.get('/keep-alive', (req, res) => {
   res.status(200).json({
@@ -68,27 +69,27 @@ app.get('/keep-alive', (req, res) => {
 app.post('/product/category', async (req, res) => {
   try {
     const { category } = req.body;
-    
+
     // Normalize the category to handle case variations
     let normalizedCategory = category.toLowerCase();
     let searchCategory;
 
     // Map normalized categories to their proper display versions
-    switch(normalizedCategory) {
+    switch (normalizedCategory) {
       case 'gift-boxes':
       case 'gift boxes':
         searchCategory = 'Gift Boxes';
         break;
       case 'books':
         searchCategory = 'Books';
-         break;
+        break;
       case 'stationery':
         searchCategory = 'Stationery';
         break;
       default:
         searchCategory = category;
     }
-    
+
     const products = await Product.find({ category: searchCategory });
 
     res.status(200).json({
@@ -109,7 +110,7 @@ app.post('/create-product', async (req, res) => {
     const productData = req.body;
     const product = new Product(productData);
     const result = await product.save();
-    
+
     res.status(201).json({
       success: true,
       message: 'Product created successfully',
@@ -199,7 +200,7 @@ app.post('product/:productId', async (req, res) => {
 //   try {
 //     const { productId } = req.params;
 //     const product = await Product.findById(productId);
-    
+
 //     if (!product) {
 //       return res.status(404).json({
 //         success: false,
@@ -267,7 +268,7 @@ app.get('/assign-productid', async (req, res) => {
   try {
     // Find all products
     const products = await Product.find();
-    
+
     if (products.length === 0) {
       return res.status(404).send('No products found to assign productIds.');
     }
@@ -282,7 +283,7 @@ app.get('/assign-productid', async (req, res) => {
       do {
         productId = Math.floor(100000 + Math.random() * 900000).toString();
       } while (usedIds.has(productId));
-      
+
       usedIds.add(productId);
 
       const updateResult = await Product.findOneAndUpdate(
@@ -378,7 +379,7 @@ const Order = mongoose.model('Order', orderSchema);
 app.get('/get-orders', async (req, res) => {
   try {
     const orders = await Order.find();
-    
+
     res.status(200).json({
       success: true,
       orders
@@ -398,7 +399,7 @@ app.get('/get-user', async (req, res) => {
       {}, // Remove filter to get all users
       '-password' // Exclude only the password field
     );
-    
+
     res.status(200).json({
       success: true,
       users
@@ -477,7 +478,7 @@ app.post('/find-my-order', async (req, res) => {
     const findProductDetails = async (productIds) => {
       try {
         const productDetails = [];
-        
+
         // Make API calls for each productId
         for (const productId of productIds) {
           try {
