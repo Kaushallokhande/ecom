@@ -25,8 +25,8 @@ const app = express();
 //   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
 //   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 // }));
-app.use(cors());
-// app.use(cors({ origin: "*", methods: "GET,POST" }))
+// app.use(cors());
+app.use(cors({ origin: "*", methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'] }))
 app.use(express.json());
 app.use(require('cookie-parser')());
 app.use(express.urlencoded({ extended: true }));
